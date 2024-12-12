@@ -18,9 +18,9 @@ with open(input_file, "r") as file:  # Open the input file for reading
         # Strip newline characters and convert to list of characters
 
 
-def find_trail(trails, x, y):
+def find_trail_rating(trails, x, y):
     """
-    Finds the number of reachable cells with a height of 9 starting from a given cell (x, y) in a grid of trails.
+    Finds the number of distinct hiking trails starting from a given cell (x, y) in a grid of trails.
 
     Args:
         trails (list of list of str): A 2D grid representing the heights of the trails.
@@ -28,50 +28,31 @@ def find_trail(trails, x, y):
         y (int): The starting y-coordinate.
 
     Returns:
-        int: The number of reachable cells with a height of 9.
+        int: The number of distinct hiking trails starting from the given cell.
     """
-    queue = [(x, y)]  # Initialize a list with the starting cell
-    visited = set()  # Create a set to keep track of visited cells
-    visited.add((x, y))  # Mark the starting cell as visited
-    reachable_nines = set()  # Create a set to store reachable cells with height 9
 
-    while queue:  # Process cells in the queue until it's empty
-        cx, cy = queue.pop(0)  # Dequeue the next cell (pop from the front)
-        current_height = int(trails[cx][cy])  # Get the height of the current cell
-
-        if current_height == 9:  # If the current cell has a height of 9
-            reachable_nines.add((cx, cy))  # Add it to the set of reachable nines
-            continue  # Continue to the next iteration
-
-        # Check all four possible directions (up, down, left, right)
+    def dfs(cx, cy, current_height):
+        if current_height == 9:
+            return 1
+        total_trails = 0
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = (
-                cx + dx,
-                cy + dy,
-            )  # Calculate the coordinates of the neighboring cell
-            # Check if the neighboring cell is within bounds and not visited
-            if (
-                0 <= nx < len(trails)
-                and 0 <= ny < len(trails[0])
-                and (nx, ny) not in visited
-            ):
-                # Get the height of the neighboring cell
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < len(trails) and 0 <= ny < len(trails[0]):
                 next_height = int(trails[nx][ny])
-                # If the neighboring cell height is one more than the current cell
                 if next_height == current_height + 1:
-                    queue.append((nx, ny))  # Add the neighboring cell to the queue
-                    visited.add((nx, ny))  # Mark the neighboring cell as visited
+                    total_trails += dfs(nx, ny, next_height)
+        return total_trails
 
-    return len(reachable_nines)  # Return the number of reachable cells with height 9
+    return dfs(x, y, 0)
 
 
-# Find all trailheads and calculate their scores
-total_score = 0  # Initialize the total score
+# Find all trailheads and calculate their ratings
+total_rating = 0  # Initialize the total rating
 for i, row in enumerate(trails):  # Iterate over each row in the trails grid
     for j, char in enumerate(row):  # Iterate over each character in the row
         if char == "0":  # If the character is '0', it is a trailhead
-            total_score += find_trail(
+            total_rating += find_trail_rating(
                 trails, i, j
-            )  # Add the score of the trail starting from this trailhead
+            )  # Add the rating of the trail starting from this trailhead
 
-print(total_score)  # Print the total score
+print(total_rating)  # Print the total rating
